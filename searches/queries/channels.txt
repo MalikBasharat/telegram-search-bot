@@ -1,0 +1,21 @@
+# ====================================================================
+# Verified Telegram Channels for Free Courses, Tech Files & Media
+# ====================================================================
+
+# --- Free Udemy Courses & Tutorials ---
+udemyforu
+freecoursudemypaid
+udemydownload
+
+# --- Programming, Coding & Computer Science Books ---
+coderslearning
+programming_books
+ComputerScienceResources
+thedevs
+prograchallenges
+
+# --- AI & Technology ---
+learn_ai_free
+
+# --- HD Wallpapers & Media ---
+chinawenhua

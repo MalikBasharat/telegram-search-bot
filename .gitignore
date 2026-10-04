@@ -1,0 +1,45 @@
+# Telegram sessions & sensitive credentials
+*.session
+*.session-journal
+.env
+.env.local
+config/secrets.json
+config/credentials.json
+config/session_string.txt
+.sentry-native/
+
+
+# Database files
+data/*.db
+data/*.db-wal
+data/*.db-shm
+!data/.gitkeep
+
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Downloaded files & large media (optional to commit)
+files/downloads/*
+!files/downloads/.gitkeep
+files/media/*
+!files/media/.gitkeep
+files/documents/*
+!files/documents/.gitkeep
+
+# Search results & exports
+searches/results/*
+!searches/results/.gitkeep
+exports/*
+!exports/.gitkeep
+
+# System & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
