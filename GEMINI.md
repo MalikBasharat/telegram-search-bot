@@ -22,10 +22,12 @@
 - **Exports:** Save chat dumps and historical exports in `exports/`.
 - **Credentials:** Keep all API keys and session tokens in `config/.env` or `config/`, never commit them.
 
-## 3. Strict Git Credential Sanitization & Secret Invariants
-- **Template & Example Files:** `config/.env.example`, documentation, and sample configs must NEVER contain real API IDs, API hashes, bot tokens, phone numbers, or session strings. Always enforce dummy placeholders (`your_token_here`).
-- **Pre-Commit Secret Scan:** Before executing `git commit` or `git push`, inspect all staged files (`git diff --cached`) to verify zero credentials, tokens, or secret keys are staged.
-- **Git History Purge Protocol:** If secrets are ever committed, NEVER make an overwrite commit on top. Immediately perform a `git reset --soft` or amend, rewrite history to permanently erase the sensitive commit, and force-push (`git push --force origin main`). Prompt the user to rotate the exposed token immediately.
+## 3. Strict Git Credential & Personal Data Sanitization
+- **Template, Blueprint & Example Files:** `config/.env.example`, `render.yaml`, documentation, and sample configs must NEVER contain real API IDs, API hashes, bot tokens, phone numbers, session strings, or **numeric Telegram User IDs** (`ADMIN_USER_IDS`). 
+  - In `render.yaml`: Always set `sync: false` for all sensitive variables including `ADMIN_USER_IDS`.
+  - In templates and docs: Always enforce dummy placeholders (`your_token_here`, `your_telegram_id`).
+- **Pre-Commit Secret Scan:** Before executing `git commit` or `git push`, inspect all staged files (`git diff --cached`) to verify zero credentials, tokens, user IDs, or secret keys are staged.
+- **Git History Purge Protocol:** If secrets or user IDs are ever committed, NEVER make an overwrite commit on top. Immediately perform a `git reset --soft` or amend, rewrite history to permanently erase the sensitive commit, and force-push (`git push --force origin main`). Prompt the user to rotate the exposed token immediately.
 
 ## 4. Cloud Hosting & Deployment Invariants
 - **Hugging Face Spaces Compute Policy:** Hugging Face Spaces free tier only supports static HTML/JS; Docker and compute spaces require a paid PRO plan ($9/mo). Do not attempt free Docker compute deployment on Hugging Face.
@@ -34,3 +36,5 @@
   - Port `10000` bound to a lightweight `aiohttp` keep-alive health server (`GET /health` responding `200 OK`).
   - All credentials injected via Render Environment Variables, never via Git.
   - Headless user authentication powered by `TELEGRAM_USER_SESSION_STRING` (`StringSession`) to avoid interactive SMS prompts in container restarts.
+- **Headless Container Observability:** The `/health` endpoint must report live authentication telemetry (`user_client_authorized`, `user_name`, `has_session_string`, `total_files`, `total_channels`) to allow instantaneous verification of cloud MTProto session health via HTTP.
+- **On-Demand Admin Verification:** Always provide an on-demand `/crawl` command in the bot so administrators can trigger and observe channel indexing without waiting for background polling loops.
