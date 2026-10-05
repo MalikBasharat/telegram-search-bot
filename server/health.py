@@ -95,11 +95,42 @@ def make_app() -> web.Application:
     app.router.add_get("/health", handle_health)
     return app
 
+async def self_ping_worker(external_url: str, interval: int = 600):
+    """
+    Periodically sends an external HTTP request to the service's public URL
+    to prevent cloud containers (like Render free tier) from idling out after 15 minutes.
+    """
+    import asyncio
+    import aiohttp
+    clean_url = external_url.rstrip("/")
+    if not clean_url.startswith("http"):
+        clean_url = f"https://{clean_url}"
+    ping_url = f"{clean_url}/health"
+    logger.info(f"[+] Keep-alive self-pinger initialized for {ping_url} (interval: {interval}s)")
+
+    # Wait 2 minutes after boot before firing the first keep-alive ping
+    await asyncio.sleep(120)
+
+    while True:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(ping_url, timeout=aiohttp.ClientTimeout(total=30)) as resp:
+                    logger.info(f"[+] Keep-alive ping to {ping_url} returned HTTP {resp.status}")
+        except Exception as e:
+            logger.warning(f"[!] Keep-alive ping warning: {e}")
+        await asyncio.sleep(interval)
+
 async def start_health_server(port: int = 8080):
-    """Starts the healthcheck HTTP server."""
+    """Starts the healthcheck HTTP server and background keep-alive self-pinger."""
+    import asyncio
     app = make_app()
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
     logger.info(f"[+] Cloud Keep-Alive HTTP server listening on port {port}")
+
+    # Launch background self-pinger if running on cloud
+    ext_url = os.getenv("RENDER_EXTERNAL_URL") or os.getenv("APP_URL") or "https://telegram-search-bot-qsjy.onrender.com"
+    if ext_url and not ext_url.startswith("http://localhost") and not ext_url.startswith("http://127.0.0.1"):
+        asyncio.create_task(self_ping_worker(ext_url, interval=600))
